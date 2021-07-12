@@ -17,7 +17,7 @@ db = motor.motor_asyncio.AsyncIOMotorClient(f'mongodb://{DB_USER}:{DB_PASS}@127.
 async def pagination(page_size, page_num=1):
     while True:
         skips = page_size * (page_num - 1)
-        results = list(await db['users'].find().skip(skips).limit(page_size))
+        results = [i async for i in db['users'].find().skip(skips).limit(page_size)]
         if results:
             page_num += 1
             yield results
