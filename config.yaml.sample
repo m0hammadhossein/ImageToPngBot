@@ -1,0 +1,8 @@
+---
+SUDO: 12345678
+BOT_TOKEN: 12345678:xxxxxxxxxxxxxxxx
+API_ID: 12345678
+API_HASH: xxxxxxxxxxxxxxxxxxxxxxxxxx
+DB_USER: myuser
+DB_NAME: mydb
+DB_PASS: mypass
