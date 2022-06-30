@@ -88,11 +88,6 @@ async def forward_msg(_, msg):
     await msg.reply_text(f'Your message was successfully sent to {success_send} users')
 
 
-async def unblock_user(_, msg):
-    await db['users'].update_one({'_id': int(msg.matches[0].group(1))}, {'$set': {'block': False}})
-    await msg.reply_text('Done')
-
-
 @client.on_message(filters.user(SUDO) & filters.regex(r'^/unblock (\d+)$'))
 async def unblock_user(_, msg):
     await db['users'].update_one({'_id': int(msg.matches[0].group(1))}, {'$set': {'block': False}})
