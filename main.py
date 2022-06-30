@@ -157,7 +157,7 @@ async def check_data(_, cl: CallbackQuery):
                 await cl.message.reply_text('Please send your message.', reply_markup=keyboard)
     else:
         if cl.data == 'cancel':
-            db['users'].update_one({'_id': SUDO}, {'$set': {'step': 'empty'}})
+            await db['users'].update_one({'_id': SUDO}, {'$set': {'step': 'empty'}})
             await cl.message.edit_text('The operation was canceled')
         else:
             await cl.answer('Please complete or cancel the previous operation first', show_alert=True)
