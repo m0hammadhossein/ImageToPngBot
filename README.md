@@ -1,6 +1,5 @@
 # ImageToPngBot
 
-## About
 Convert image format to png along with changing its resolution to make a telegram sticker
 
 ## Installation
