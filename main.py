@@ -81,8 +81,8 @@ async def forward_msg(_, msg):
                 await sleep(ex.value)
                 await msg.copy(mem['_id'])
                 success_send += 1
-            except errors.UserBlocked:
-                continue
+            except (errors.UserBlocked, errors.UserIsBot):
+                await db['users'].delete_one({'_id': mem['_id']})
         await sleep(5)
     await db['users'].update_one({'_id': SUDO}, {'$set': {'step': 'empty'}})
     await msg.reply_text(f'Your message was successfully sent to {success_send} users')
