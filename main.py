@@ -3,7 +3,8 @@ from os import remove
 from asyncio import sleep
 from pymongo import MongoClient
 from pyrogram import Client, filters, enums, errors
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.raw.functions.messages import ForwardMessages
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message
 from uvloop import install
 from utils.config import API_ID, API_HASH, TOKEN, DB_USER, DB_PASS, SUDO, DB_NAME
 from utils.convert import convert_img
@@ -68,18 +69,34 @@ async def check_spam(_, msg):
 
 
 @client.on_message(filters.user(SUDO) & step_filter('fwd'))
-async def forward_msg(_, msg):
+async def forward_msg(bot: Client, msg: Message):
     db['users'].update_one({'_id': SUDO}, {'$set': {'step': 'is_fwd'}})
     await msg.reply_text('The message sending operation has started')
     success_send = 0
     async for members in pagination(20):
         for mem in members:
             try:
-                await msg.copy(mem['_id'])
+                await bot.invoke(
+                    ForwardMessages(
+                        to_peer=await bot.resolve_peer(mem['_id']),
+                        from_peer=await bot.resolve_peer(msg.chat.id),
+                        id=[msg.id],
+                        random_id=[bot.rnd_id()],
+                        drop_author=True
+                    )
+                )
                 success_send += 1
             except errors.FloodWait as ex:
                 await sleep(ex.value)
-                await msg.copy(mem['_id'])
+                await bot.invoke(
+                    ForwardMessages(
+                        to_peer=await bot.resolve_peer(mem['_id']),
+                        from_peer=await bot.resolve_peer(msg.chat.id),
+                        id=[msg.id],
+                        random_id=[bot.rnd_id()],
+                        drop_author=True
+                    )
+                )
                 success_send += 1
             except (errors.UserIsBlocked, errors.UserIsBot, errors.UserDeactivated):
                 db['users'].delete_one({'_id': mem['_id']})
