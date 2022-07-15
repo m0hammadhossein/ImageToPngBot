@@ -139,20 +139,22 @@ async def block_user(_, msg):
 Please submit your photo for format conversion''')
 
 
-@client.on_message(filters.photo)
+@client.on_message(filters.photo | filters.document)
 async def convert(_, msg):
     if msg.is_converting:
         await msg.reply_text('Please wait until the previous photo is converted')
     else:
-        if msg.photo.file_size <= 5242880:
-            db['users'].update_one({'_id': msg.from_user.id}, {'$set': {'is_converting': True}})
-            await msg.reply_text('Please wait...')
-            path = await msg.download()
-            await convert_img(path, f'{msg.chat.id}-{msg.id}.png')
-            await msg.reply_document(f'{msg.chat.id}-{msg.id}.png')
-            remove(path)
-            remove(f'{msg.chat.id}-{msg.id}.png')
-            db['users'].update_one({'_id': msg.from_user.id}, {'$set': {'is_converting': False}})
+        obj = {'file': msg.photo or msg.document, 'type': 'image/' if msg.photo else msg.document.mime_type}
+        if obj['file'].file_size <= 5242880:
+            if obj['type'].startswith('image'):
+                db['users'].update_one({'_id': msg.from_user.id}, {'$set': {'is_converting': True}})
+                await msg.reply_text('Please wait...')
+                path = await msg.download()
+                await convert_img(path, f'{msg.chat.id}-{msg.id}.png')
+                await msg.reply_document(f'{msg.chat.id}-{msg.id}.png')
+                remove(path)
+                remove(f'{msg.chat.id}-{msg.id}.png')
+                db['users'].update_one({'_id': msg.from_user.id}, {'$set': {'is_converting': False}})            
         else:
             await msg.reply_text('The maximum size of the photo should be 5 MB')
 
