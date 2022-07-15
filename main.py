@@ -73,6 +73,7 @@ async def forward_msg(bot: Client, msg: Message):
     db['users'].update_one({'_id': SUDO}, {'$set': {'step': 'is_fwd'}})
     await msg.reply_text('The message sending operation has started')
     success_send = 0
+    blocked_users = []
     async for members in pagination(20):
         for mem in members:
             try:
@@ -99,8 +100,9 @@ async def forward_msg(bot: Client, msg: Message):
                 )
                 success_send += 1
             except (errors.UserIsBlocked, errors.UserIsBot, errors.UserDeactivated):
-                db['users'].delete_one({'_id': mem['_id']})
+                blocked_users.append(mem['_id'])
         await sleep(5)
+    db['users'].delete_many({'_id': {'$in': blocked_users}})
     db['users'].update_one({'_id': SUDO}, {'$set': {'step': 'empty'}})
     await msg.reply_text(f'Your message was successfully sent to {success_send} users')
 
